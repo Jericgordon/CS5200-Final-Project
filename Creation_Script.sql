@@ -41,16 +41,20 @@ CREATE TABLE publishes(
 	publisher_id INT,
     game_id INT,
     PRIMARY KEY(publisher_id,game_id),
-    FOREIGN KEY (publisher_id) REFERENCES publisher(publisher_id),
+    FOREIGN KEY (publisher_id) REFERENCES publisher(publisher_id)
+		ON DELETE CASCADE ON UPDATE CASCADE,
 	FOREIGN KEY (game_id) REFERENCES board_game(game_id) 
+		ON DELETE CASCADE ON UPDATE CASCADE
     );
 
 CREATE TABLE designs(
 	designer_id INT,
     game_id INT,
     PRIMARY KEY(designer_id,game_id),
-    FOREIGN KEY (designer_id) REFERENCES designer(designer_id),
+    FOREIGN KEY (designer_id) REFERENCES designer(designer_id)
+		ON DELETE CASCADE ON UPDATE CASCADE,
 	FOREIGN KEY (game_id) REFERENCES board_game(game_id) 
+		ON DELETE CASCADE ON UPDATE CASCADE
     );
     
 
@@ -58,8 +62,10 @@ CREATE TABLE game_category(
 	c_name VARCHAR(64),
     game_id INT,
     PRIMARY KEY(c_name,game_id),
-    FOREIGN KEY (c_name) REFERENCES category(c_name),
+    FOREIGN KEY (c_name) REFERENCES category(c_name)
+		ON DELETE CASCADE ON UPDATE CASCADE,
 	FOREIGN KEY (game_id) REFERENCES board_game(game_id) 
+		ON DELETE CASCADE ON UPDATE CASCADE
     );
     
 
@@ -68,8 +74,10 @@ CREATE TABLE game_award(
     a_year YEAR,
     game_id INT,
     PRIMARY KEY(a_name,a_year,game_id),
-    FOREIGN KEY (a_name,a_year) REFERENCES award (a_name,a_year),
+    FOREIGN KEY (a_name,a_year) REFERENCES award (a_name,a_year)
+		ON DELETE CASCADE ON UPDATE CASCADE,
 	FOREIGN KEY (game_id) REFERENCES board_game(game_id) 
+		ON DELETE CASCADE ON UPDATE CASCADE
     );
 
 
@@ -85,16 +93,20 @@ CREATE TABLE rates (
 	rating INT not null CHECK(rating > 0 and rating <= 10),
     user_comment VARCHAR(1024),
     PRIMARY KEY(username,game_id),
-	FOREIGN KEY (game_id) REFERENCES board_game(game_id),
+	FOREIGN KEY (game_id) REFERENCES board_game(game_id)
+		ON DELETE CASCADE ON UPDATE CASCADE,
     FOREIGN KEY (username) REFERENCES app_user(username)
+		ON DELETE CASCADE ON UPDATE CASCADE
     );
     
 CREATE TABLE friends (
 	username_one VARCHAR(64),
     username_two VARCHAR(64),
     PRIMARY KEY(username_one,username_two),
-    FOREIGN KEY (username_one) REFERENCES app_user(username),
+    FOREIGN KEY (username_one) REFERENCES app_user(username)
+		ON DELETE CASCADE ON UPDATE CASCADE,
 	FOREIGN KEY (username_two) REFERENCES app_user(username)
+		ON DELETE CASCADE ON UPDATE CASCADE
     );
 
 CREATE TABLE collection (
@@ -107,16 +119,20 @@ CREATE TABLE owns (
 	username VARCHAR(64),
     collection_id INT,
     PRIMARY KEY (username,collection_id),
-    FOREIGN KEY (username) REFERENCES app_user(username),
+    FOREIGN KEY (username) REFERENCES app_user(username)
+		ON DELETE CASCADE ON UPDATE CASCADE,
     FOREIGN KEY (collection_id) REFERENCES collection(collection_id)
+		ON DELETE CASCADE ON UPDATE CASCADE
     );
     
 CREATE TABLE collection_contains (
 	collection_id INT,
     game_id INT,
     PRIMARY KEY(collection_id,game_id),
-    FOREIGN KEY (collection_id) REFERENCES collection(collection_id),
+    FOREIGN KEY (collection_id) REFERENCES collection(collection_id)
+		ON DELETE CASCADE ON UPDATE CASCADE,
     FOREIGN KEY (game_id) REFERENCES board_game(game_id)
+		ON DELETE CASCADE ON UPDATE CASCADE
     );
     
     

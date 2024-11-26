@@ -31,7 +31,28 @@ class user_tests(unittest.TestCase):
         username = "alex"
         password = "super343"
         cur = cnx.cursor()
+        cur.execute(f"DELETE FROM app_user WHERE username = '{username}'")
         u.create_account(username,password,birthday)
-       #cur.execute(f"DELETE FROM app_user WHERE username = {username}")
 
+    def test_delete_user(self):
+        cnx = self.connect()
+        u = User(cnx)
+        u.create_account("dave","123",datetime.date(1950,12,12))
+        u.delete_account("dave","123")
+
+    def test_add_friend(self):
+        cnx = self.connect()
+        u = User(cnx)
+        u.delete_account("test1","123")
+        u.delete_account("test2","123")
+        u.create_account("test1","123",datetime.date(1950,12,12))
+        u.create_account("test2","123",datetime.date(1950,12,12))
+        u.login("test1","123")
+        u.add_friend("test2")
         
+    def test_create_collection(self):
+        cnx = self.connect()
+        u = User(cnx)
+        #u.create_account("test3","123",datetime.date(1950,12,12))
+        u.login("test3","123")
+        u.create_collection("mycolleciton","home")
