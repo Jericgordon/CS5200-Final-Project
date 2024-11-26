@@ -1,3 +1,6 @@
+CREATE DATABASE final_project;
+USE final_project;
+
 CREATE TABLE publisher (
 	publisher_id INT PRIMARY KEY,
     p_name VARCHAR(64) not null,
@@ -69,9 +72,10 @@ CREATE TABLE game_award(
 	FOREIGN KEY (game_id) REFERENCES board_game(game_id) 
     );
 
+
 CREATE TABLE app_user (
 	username VARCHAR(64) PRIMARY KEY,
-    password VARCHAR(64) NOT NULL,
+    password VARCHAR(128) NOT NULL,
     birth_date DATE
     );
     
@@ -115,3 +119,27 @@ CREATE TABLE collection_contains (
     FOREIGN KEY (game_id) REFERENCES board_game(game_id)
     );
     
+    
+drop function if exists check_password;
+delimiter $$
+CREATE FUNCTION check_password(username VARCHAR(64), password VARCHAR(128))
+	RETURNS tinyint
+    DETERMINISTIC
+    READS SQL DATA
+    BEGIN
+		DECLARE password_hash VARCHAR(128);
+		SELECT app_user.password into password_hash FROM app_user WHERE app_user.username = username;
+        
+        IF (password_hash = password)
+			THEN RETURN true;
+		END IF;
+		RETURN false;
+    END$$
+delimiter ;
+
+
+
+-- test inserts
+INSERT INTO app_user VALUES('tim','ee26b0dd4af7e749aa1a8ee3c10ae9923f618980772e473f8819a5d4940e0db27ac185f8a0e1d5f84f88bc887fd67b143732c304cc5fa9ad8e6f57f50028a8ff','2000-10-10');
+
+INSERT INTO app_user VALUES('tim2','DASDF',"2022-11-11");
