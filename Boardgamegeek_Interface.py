@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
-
-import json
 from libbgg.apiv1 import BGG
+#INSTALL WITH pip install py-bgg
 # You can also use version 2 of the api:
 # from libbgg.apiv2 import BGG as BGG2
 
@@ -116,12 +115,13 @@ class Boardgamegeek_Interface():
     
 if __name__ == "__main__":
     bgg = Boardgamegeek_Interface()
-    games = bgg.search_for_games("Arcadia Quest")
+    games = bgg.search_for_games("Hanabi")
     # for game in games:
     #     print(f"I found {game.name.TEXT}")
 
     id = games[0].objectid
     thingy = bgg.lookup_game(id)
-    print(thingy)
+    for each in thingy:
+        print(thingy[each])
 
     
