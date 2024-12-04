@@ -44,11 +44,12 @@ class Game(): #
     def save_game_to_db(self):
   
         cur = self.cnx.cursor()
-        #cur.execute(f"""CALL add_game({self.game_id},"{self.bg_name}","{self.publication_date}",{self.min_players},{self.max_players},{self.min_player_age},"{self.bg_description}");""")
-        #self._add_designers(cur)
-        #self._add_mechanic(cur)
-        #self._add_category(cur)
+        cur.execute(f"""CALL add_game({self.game_id},"{self.bg_name}",{self.publication_date},{self.min_players},{self.max_players},{self.min_player_age},"{self.bg_description}");""")
+        self._add_designers(cur)
+        self._add_mechanic(cur)
+        self._add_category(cur)
         self._add_publisher(cur)
+        self._add_award(cur)
         self.cnx.commit()
         cur.close()
 
