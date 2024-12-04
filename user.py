@@ -80,6 +80,8 @@ class User():
     def add_game_to_collection(self,name,game_id) -> None:
         ... # to be implemented after the game class is created
 
+    def rate_game(game_id:int,rating:int,username:str,user_comment:str) -> None:
+        ... # to be implemented after the game class is created
 
 
     
