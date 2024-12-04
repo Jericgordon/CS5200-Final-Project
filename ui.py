@@ -79,6 +79,24 @@ class Python_Ui:
         print(f"Friending... {choices[choice-1]}")
         cur.callproc('friend_user', ('zimbo', choices[choice-1]))
         cur.close()
+        self.cnx.commit()
+    
+    def rate_game(self):
+        # game = self.find_game()
+        searching = True
+        while searching:
+            rating = input("What would you rate this game (out of ten)?")
+            if rating.isnumeric():
+                searching=False
+                rating = int(rating)
+            else:
+                print("Sorry, integers only please!")
+        desc = input("What would you like to say about this game?")
+        cur = self.cnx.cursor()
+        cur.callproc('rate_game', ('zimbo', 1, rating, desc))
+        cur.close()
+        self.cnx.commit()
+        
 
     def run_main_loop(self):
         
@@ -104,10 +122,7 @@ class Python_Ui:
                     print(type(cur))
                     
                 case 3:
-                    print("RATING GAME")
-                    cur = self.cnx.cursor()
-                    resultArgs = cur.callproc('add_designer', (100, "David Sirloin", 1))
-                    print(resultArgs)
+                    self.rate_game()
                 case 4:
                     print("FINDING GAME")
                 case 5:
