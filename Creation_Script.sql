@@ -153,6 +153,29 @@ CREATE FUNCTION check_password(username VARCHAR(64), password VARCHAR(128))
     END$$
 delimiter ;
 
+DROP PROCEDURE IF EXISTS add_user;
+DELIMITER $$
+CREATE PROCEDURE add_user(username VARCHAR(64), password VARCHAR(128))
+BEGIN
+	DECLARE usr_count INT;
+	SELECT COUNT(username) INTO usr_count FROM app_user WHERE (app_user.username = username);
+		IF (usr_count < 1)
+			THEN 
+			INSERT INTO app_user VALUES(username,password);
+		END IF;
+END $$
+
+DROP PROCEDURE IF EXISTS add_designer;
+DELIMITER $$
+CREATE PROCEDURE add_designer(designer_id INT,designer_name VARCHAR(64),d_description VARCHAR(1024))
+BEGIN
+	DECLARE id INT;
+	SELECT designer_id INTO id WHERE (designer_id = id);
+		IF (designer_id != id)
+			THEN 
+			INSERT INTO designer VALUES(designer_id,designer_name,d_description);
+		END IF;
+END $$
 
 
 -- test inserts
