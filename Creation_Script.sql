@@ -78,6 +78,16 @@ CREATE TABLE game_award(
 	FOREIGN KEY (game_id) REFERENCES board_game(game_id) 
 		ON DELETE CASCADE ON UPDATE CASCADE
     );
+    
+CREATE TABLE game_mechanic (
+	m_id INT,
+    game_id INT,
+    PRIMARY KEY (m_id,game_id),
+	FOREIGN KEY (m_id) REFERENCES mechanic(m_id) 
+		ON DELETE CASCADE ON UPDATE CASCADE,
+	FOREIGN KEY (game_id) REFERENCES board_game(game_id) 
+		ON DELETE CASCADE ON UPDATE CASCADE
+        );
 
 
 CREATE TABLE app_user (
@@ -200,21 +210,30 @@ delimiter ;
 
 DROP PROCEDURE IF EXISTS add_mechanic;
 DELIMITER $$
-CREATE PROCEDURE add_mechanic(m_id INT, m_name VARCHAR(64))
+CREATE PROCEDURE add_mechanic(m_id INT, m_name VARCHAR(64),game_id INT)
 BEGIN
 	DECLARE item_exists INT;
+	DECLARE message VARCHAR(64);
+	SELECT COUNT(game_id) INTO item_exists FROM board_game WHERE (board_game.game_id = game_id);
+	IF (item_exists < 1)
+		THEN
+			set message = CONCAT("board_game ",game_id," does not exist");
+			SIGNAL SQLSTATE '45000'
+			set message_text = message;
+	END IF;
 	SELECT COUNT(m_id) INTO item_exists FROM mechanic WHERE (mechanic.m_id = m_name);
-		IF (m_count < 1)
+		IF (item_exists < 1)
 			THEN 
-			INSERT INTO mechanic VALUES(m_name);
+			INSERT INTO mechanic VALUES(m_id,m_name);
 		END IF;
+	INSERT INTO game_mechanic VALUES(m_id,game_id);
 END $$
 
 delimiter ;
 
 DROP PROCEDURE IF EXISTS add_category;
 DELIMITER $$
-CREATE PROCEDURE add_category(c_name VARCHAR(64),c_id INT,game_id INT)
+CREATE PROCEDURE add_category(c_id INT, c_name VARCHAR(64),game_id INT)
 BEGIN
 	DECLARE item_exists INT;
     DECLARE message VARCHAR(64);
@@ -230,6 +249,7 @@ BEGIN
 			THEN 
 			INSERT INTO category VALUES(c_id,c_name);
 		END IF;
+	INSERT INTO game_category VALUES(c_id,game_id);
 END $$
 
 delimiter ;
