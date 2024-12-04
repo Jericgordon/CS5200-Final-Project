@@ -15,7 +15,7 @@ class Python_Ui:
     """
     def __init__(self):
         self.bgg = Boardgamegeek_Interface.Boardgamegeek_Interface()
-        self.login()
+        self.cnx = self.login()
         self.run_main_loop()
 
     def get_user_choice(self, options, message="\n"):
@@ -40,17 +40,16 @@ class Python_Ui:
         print("Welcome to Jen and Ari's Board Game Hub! What would you like to do?")
         choice = self.get_user_choice(["Login", "Create a New Account"])
         if choice == 1:
-            print("You're logged in!")
-            # while True:
-            #     username = input("What is your username?")
-            #     password = input("What is your password?")
-            #     try:
-            #         cnx = pymysql.connect(host='localhost',user = username,password=password,\
-            #                             db ='final_project',charset='utf8mb4')
-            #         break
-            #     except pymysql.err.OperationalError:
-            #         print("Invalid credentials")
-            # return cnx
+            while True:
+                username = input("What is your username?")
+                password = input("What is your password?")
+                try:
+                    cnx = pymysql.connect(host='localhost',user = username,password=password,\
+                                    db ='final_project',charset='utf8mb4')
+                    break
+                except pymysql.err.OperationalError:
+                    print("Invalid credentials")
+            return cnx
         else:
             username = input("What would you like your username to be?\n")
             password = input("What would you like your password to be?\n")
@@ -82,8 +81,9 @@ class Python_Ui:
                 case 2:
                     print("ADDING GAME TO COLLECTION")
                     game = self.find_game()
-                    for key in game:
-                        print(game[key])
+                    cur = self.cnx.cursor
+                    cur.callproc('get_customer_journeys', args=[chosen_user])
+                    
                 case 3:
                     print("RATING GAME")
                 case 4:
