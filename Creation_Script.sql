@@ -200,7 +200,7 @@ DROP PROCEDURE IF EXISTS add_mechanic;
 DELIMITER $$
 CREATE PROCEDURE add_mechanic(m_name VARCHAR(64))
 BEGIN
-	DECLARE m_count INT;
+	DECLARE item_exists INT;
 	SELECT COUNT(m_name) INTO m_count FROM mechanic WHERE (mechanic.m_name = m_name);
 		IF (m_count < 1)
 			THEN 
@@ -234,7 +234,7 @@ delimiter ;
 
 DROP PROCEDURE IF EXISTS add_publisher;
 DELIMITER $$
-CREATE PROCEDURE add_publisher(publisher_id INT,p_name VARCHAR(64))
+CREATE PROCEDURE add_publisher(publisher_id INT,p_name VARCHAR(64),game_id INT)
 BEGIN
 	DECLARE item_exists INT;
     DECLARE message VARCHAR(64);
@@ -245,8 +245,8 @@ BEGIN
 			SIGNAL SQLSTATE '45000'
 			set message_text = message;
 	END IF;
-	SELECT COUNT(publisher_id) INTO p_count FROM publisher WHERE (publisher.publisher_id = publisher_id);
-		IF (p_count < 1)
+	SELECT COUNT(publisher_id) INTO item_exits FROM publisher WHERE (publisher.publisher_id = publisher_id);
+		IF (item_exits < 1)
 			THEN 
 			INSERT INTO publisher VALUES(publisher_id,p_name);
 		END IF;
