@@ -15,7 +15,7 @@ class Python_Ui:
     """
     def __init__(self):
         self.bgg = Boardgamegeek_Interface.Boardgamegeek_Interface()
-        self.cnx = self.login()
+        self.login()
         self.run_main_loop()
 
     def get_user_choice(self, options, message="\n"):
@@ -41,15 +41,17 @@ class Python_Ui:
         choice = self.get_user_choice(["Login", "Create a New Account"])
         if choice == 1:
             while True:
-                username = input("What is your username?")
-                password = input("What is your password?")
+                # username = input("What is your username?")
+                # password = input("What is your password?")
+                username = "foo"
+                password = "poplop"
                 try:
                     cnx = pymysql.connect(host='localhost',user = username,password=password,\
                                     db ='final_project',charset='utf8mb4')
                     break
                 except pymysql.err.OperationalError:
                     print("Invalid credentials")
-            return cnx
+            self.cnx = cnx
         else:
             username = input("What would you like your username to be?\n")
             password = input("What would you like your password to be?\n")
@@ -61,8 +63,43 @@ class Python_Ui:
         games = self.bgg.search_for_games(title)
         choice = self.get_user_choice([game.name.TEXT for game in games])
         return self.bgg.lookup_game(games[choice-1].objectid)
+    
+    def add_friend(self):
+        cur = self.cnx.cursor()
+        cur.callproc('get_potential_friends', ('zimbo',))
+        users = cur.fetchall()
+        choices = []
+        for each in users:
+            choices.append(each[0])
+        choices.append("None")
+        print("Which of the following users would you like to befriend?")
+        choice = self.get_user_choice(choices)
+        if choice == len(choices):
+            return
+        print(f"Friending... {choices[choice-1]}")
+        cur.callproc('friend_user', ('zimbo', choices[choice-1]))
+        cur.close()
+        self.cnx.commit()
+    
+    def rate_game(self):
+        # game = self.find_game()
+        searching = True
+        while searching:
+            rating = input("What would you rate this game (out of ten)?")
+            if rating.isnumeric():
+                searching=False
+                rating = int(rating)
+            else:
+                print("Sorry, integers only please!")
+        desc = input("What would you like to say about this game?")
+        cur = self.cnx.cursor()
+        cur.callproc('rate_game', ('zimbo', 1, rating, desc))
+        cur.close()
+        self.cnx.commit()
+        
 
     def run_main_loop(self):
+        
         supported_actions = [
             "Add a Friend",
             "Add a Game to a Collection",
@@ -77,15 +114,15 @@ class Python_Ui:
             choice = self.get_user_choice(supported_actions)
             match choice:
                 case 1:
-                    print("ADDING FRIEND")
+                    self.add_friend()
                 case 2:
                     print("ADDING GAME TO COLLECTION")
                     game = self.find_game()
-                    cur = self.cnx.cursor
-                    cur.callproc('get_customer_journeys', args=[chosen_user])
+                    cur = self.cnx.cursor()
+                    print(type(cur))
                     
                 case 3:
-                    print("RATING GAME")
+                    self.rate_game()
                 case 4:
                     print("FINDING GAME")
                 case 5:
