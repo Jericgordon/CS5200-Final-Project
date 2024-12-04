@@ -12,11 +12,11 @@ class Game(): #
         self.max_players = 0
         self.min_playeer_age = 0
         self.bg_description = ""
-        self.designer_ids = []
-        self.categories = []
-        self.game_awards = [] # we need to have tuples in here with (award_name,award_year). This is to deal with being able to use it as a primary key
-        self.game_mechanics = []
-        self.game_categories = []
+        self.designers = {}
+        self.categories = {}
+        self.game_awards = {} # we need to have tuples in here with (award_name,award_year). This is to deal with being able to use it as a primary key
+        self.game_mechanics = {}
+        self.game_categories = {}
 
     def load_stored_game(self,game_id:int) -> None:
         ...
@@ -29,9 +29,9 @@ class Game(): #
         self.publication_date = results["boardgame_details"]["publication date"]
         self.min_players = results["boardgame_details"]["min players"]
         self.max_players = results["boardgame_details"]["max players"]
-        self.min_playeer_age = results["boardgame_details"]["min age"]
+        self.min_player_age = results["boardgame_details"]["min age"]
         self.bg_description = results["boardgame_details"]["description"]
-        self.designer_ids = self._load_setup_dict(results,"designers") # {designer_id:designer}
+        self.designers = self._load_setup_dict(results,"designers") # {designer_id:designer}
         self.categories = self._load_setup_dict(results,"categories") #category_id:category
         self.game_awards = self._load_setup_dict(results,"awards") # we need to have tuples in here with (award_name,award_year). This is to deal with being able to use it as a primary key
         self.game_mechanics = self._load_setup_dict(results,"mechanics")
@@ -40,6 +40,21 @@ class Game(): #
 
     def create_game(self):
         ...
+
+    def save_game_to_db(self):
+        try:
+            cur = self.cnx.cursor()
+            cur.execute(f"""CALL add_game({self.game_id},"{self.bg_name}","{self.publication_date}",{self.min_players},{self.max_players},{self.min_player_age},"{self.bg_description}");""")
+            #self._add_designers(cur)
+            self.cnx.commit()
+            cur.close()
+        except pymysql.OperationalError as er:
+            print(er)
+            ...
+
+    def _add_designers(self,cur):
+        for id,designer in self.designers.items():
+            cur.execute(f"CALL add_designer({id},'{designer}',{self.game_id});")
 
     def _load_setup_dict(self,data:dict,kind:str):
         all = data[kind]
