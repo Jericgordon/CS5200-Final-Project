@@ -3,28 +3,28 @@ USE final_project;
 
 CREATE TABLE publisher (
 	publisher_id INT PRIMARY KEY,
-    p_name VARCHAR(64) not null,
-    p_description VARCHAR(1024)
+    p_name VARCHAR(64) not null
 	);
     
 CREATE TABLE designer (
 	designer_id INT PRIMARY KEY,
-    d_name VARCHAR(64) not null,
-    d_description VARCHAR(1024)
+    d_name VARCHAR(64) not null
 	);
     
 CREATE TABLE category (
-	c_name VARCHAR(64) PRIMARY KEY
+	c_id INT PRIMARY KEY,
+	c_name VARCHAR(64) 
     );
     
 CREATE TABLE mechanic (
-	m_name VARCHAR(64) PRIMARY KEY
+	m_id INT PRIMARY KEY,
+	m_name VARCHAR(64) not null
     );
     
 CREATE TABLE award (
-	a_name VARCHAR(64),
-    a_year YEAR,
-    PRIMARY KEY (a_name,a_year));
+	award_id INT PRIMARY KEY,
+	a_name VARCHAR(64)
+	);
     
     
 CREATE TABLE board_game(
@@ -59,10 +59,10 @@ CREATE TABLE designs(
     
 
 CREATE TABLE game_category(
-	c_name VARCHAR(64),
+	c_id INT,
     game_id INT,
-    PRIMARY KEY(c_name,game_id),
-    FOREIGN KEY (c_name) REFERENCES category(c_name)
+    PRIMARY KEY(c_id,game_id),
+    FOREIGN KEY (c_id) REFERENCES category(c_id)
 		ON DELETE CASCADE ON UPDATE CASCADE,
 	FOREIGN KEY (game_id) REFERENCES board_game(game_id) 
 		ON DELETE CASCADE ON UPDATE CASCADE
@@ -70,11 +70,10 @@ CREATE TABLE game_category(
     
 
 CREATE TABLE game_award(
-	a_name VARCHAR(64),
-    a_year YEAR,
+	award_id INT,
     game_id INT,
-    PRIMARY KEY(a_name,a_year,game_id),
-    FOREIGN KEY (a_name,a_year) REFERENCES award (a_name,a_year)
+    PRIMARY KEY(award_id,game_id),
+    FOREIGN KEY (award_id) REFERENCES award (award_id)
 		ON DELETE CASCADE ON UPDATE CASCADE,
 	FOREIGN KEY (game_id) REFERENCES board_game(game_id) 
 		ON DELETE CASCADE ON UPDATE CASCADE
@@ -151,31 +150,109 @@ CREATE FUNCTION check_password(username VARCHAR(64), password VARCHAR(128))
 		END IF;
 		RETURN false;
     END$$
+
 delimiter ;
 
 DROP PROCEDURE IF EXISTS add_user;
 DELIMITER $$
 CREATE PROCEDURE add_user(username VARCHAR(64), password VARCHAR(128))
 BEGIN
-	DECLARE usr_count INT;
-	SELECT COUNT(username) INTO usr_count FROM app_user WHERE (app_user.username = username);
-		IF (usr_count < 1)
-			THEN 
-			INSERT INTO app_user VALUES(username,password);
+	DECLARE item_exists INT;
+	DECLARE message VARCHAR(64);
+	SELECT COUNT(username) INTO item_exists FROM app_user WHERE (app_user.username = username);
+		IF (item_exists >= 1)
+			THEN
+				set message = CONCAT("username ", username, " already exists");
+				SIGNAL SQLSTATE '45000'
+				set message_text = message;
 		END IF;
+	INSERT INTO app_user VALUES(username,password);
 END $$
+
+delimiter ;
+
 
 DROP PROCEDURE IF EXISTS add_designer;
 DELIMITER $$
-CREATE PROCEDURE add_designer(designer_id INT,designer_name VARCHAR(64),d_description VARCHAR(1024))
+CREATE PROCEDURE add_designer(designer_id INT,designer_name VARCHAR(64),game_id INT)
 BEGIN
-	DECLARE id INT;
-	SELECT designer_id INTO id WHERE (designer_id = id);
-		IF (designer_id != id)
+	DECLARE item_exists INT;
+	DECLARE message VARCHAR(64);
+	SELECT COUNT(game_id) INTO item_exists FROM board_game WHERE (board_game.game_id = game_id);
+		IF (item_exists < 1)
+			THEN
+				set message = CONCAT("board_game ",game_id," does not exist");
+				SIGNAL SQLSTATE '45000'
+				set message_text = message;
+		END IF;
+	SELECT COUNT(designer_id) INTO item_exists WHERE (designer_id = id);
+		IF (item_exists < 1)
 			THEN 
 			INSERT INTO designer VALUES(designer_id,designer_name,d_description);
 		END IF;
 END $$
+
+delimiter ;
+
+
+
+DROP PROCEDURE IF EXISTS add_mechanic;
+DELIMITER $$
+CREATE PROCEDURE add_mechanic(m_name VARCHAR(64))
+BEGIN
+	DECLARE m_count INT;
+	SELECT COUNT(m_name) INTO m_count FROM mechanic WHERE (mechanic.m_name = m_name);
+		IF (m_count < 1)
+			THEN 
+			INSERT INTO mechanic VALUES(m_name);
+		END IF;
+END $$
+
+delimiter ;
+
+DROP PROCEDURE IF EXISTS add_category;
+DELIMITER $$
+CREATE PROCEDURE add_category(c_name VARCHAR(64),c_id INT,game_id INT)
+BEGIN
+	DECLARE item_exists INT;
+    DECLARE message VARCHAR(64);
+	SELECT COUNT(game_id) INTO item_exists FROM board_game WHERE (board_game.game_id = game_id);
+	IF (item_exists < 1)
+		THEN
+			set message = CONCAT("board_game ",game_id," does not exist");
+			SIGNAL SQLSTATE '45000'
+			set message_text = message;
+	END IF;
+	SELECT COUNT(category) INTO item_exists FROM category WHERE (category.c_id = c_id);
+		IF (item_exists < 1)
+			THEN 
+			INSERT INTO category VALUES(c_id,c_name);
+		END IF;
+END $$
+
+delimiter ;
+
+DROP PROCEDURE IF EXISTS add_publisher;
+DELIMITER $$
+CREATE PROCEDURE add_publisher(publisher_id INT,p_name VARCHAR(64))
+BEGIN
+	DECLARE item_exists INT;
+    DECLARE message VARCHAR(64);
+	SELECT COUNT(game_id) INTO item_exists FROM board_game WHERE (board_game.game_id = game_id);
+	IF (item_exists < 1)
+		THEN
+			set message = CONCAT("board_game ",game_id," does not exist");
+			SIGNAL SQLSTATE '45000'
+			set message_text = message;
+	END IF;
+	SELECT COUNT(publisher_id) INTO p_count FROM publisher WHERE (publisher.publisher_id = publisher_id);
+		IF (p_count < 1)
+			THEN 
+			INSERT INTO publisher VALUES(publisher_id,p_name);
+		END IF;
+END $$
+
+delimiter ;
 
 
 -- test inserts
