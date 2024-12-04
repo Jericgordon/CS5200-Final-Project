@@ -19,3 +19,8 @@ class game_tests(unittest.TestCase):
     def test_check_not_present(self):
         g = Game(self.connect())
         self.assertTrue(g._check_not_present("designer","designer_id",500))
+
+    def test_save_to_db(self):
+        g = Game(self.connect())
+        g.load_game_from_bgg(98778)
+        g.save_game_to_db()
