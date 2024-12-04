@@ -15,18 +15,29 @@ class Boardgamegeek_Interface():
 
     def extract_category(self, json_obj, category_name):
         """
-        Returns a list containing all items that fit into a given category from a json.
-        Expects each category to have TEXT and objectid fields.
+        Extracts items from a category in a JSON object and returns a list of dictionaries.
         """
         items = []
-    
-        if hasattr(json_obj, category_name):
+        try:
+            # Try accessing the category name
             category_items = getattr(json_obj, category_name)
+
+            # Check if the category items are a list or a single object
             if isinstance(category_items, list):
                 for item in category_items:
-                    items.append({"name": getattr(item, "TEXT"), "id": getattr(item, "objectid")})
+                    items.append({
+                        "name": getattr(item, "TEXT", None),
+                        "id": getattr(item, "objectid", None)
+                    })
             else:
-                items.append({"name": getattr(category_items, "TEXT"), "id": getattr(category_items, "objectid")})
+                items.append({
+                    "name": getattr(category_items, "TEXT", None),
+                    "id": getattr(category_items, "objectid", None)
+                })
+        except KeyError:
+            pass
+        except AttributeError:
+            pass
 
         return items
     
@@ -45,7 +56,10 @@ class Boardgamegeek_Interface():
         #Fetches the game using its id
         results = self.connection.get_game(id , stats=False)
         game = results.boardgames.boardgame
-        game.name = game.name[0].TEXT
+        if isinstance(game.name, list):
+            game.name = game.name[0].TEXT
+        else:
+            game.name = game.name.TEXT
 
         #collates all details that will be needed for the game object
         boardgame= {
@@ -115,11 +129,11 @@ class Boardgamegeek_Interface():
     
 if __name__ == "__main__":
     bgg = Boardgamegeek_Interface()
-    games = bgg.search_for_games("Hanabi")
+    # games = bgg.search_for_games("Arcadia Quest")
     # for game in games:
     #     print(f"I found {game.name.TEXT}")
 
-    id = games[0].objectid
+    id = 185784
     thingy = bgg.lookup_game(id)
     for each in thingy:
         print(thingy[each])
