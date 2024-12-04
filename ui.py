@@ -7,12 +7,14 @@ Actions contained:
 -Rate Game
 """
 import pymysql
+import Boardgamegeek_Interface
 
 class Python_Ui:
     """
     Needs to be integrated with User
     """
     def __init__(self):
+        self.bgg = Boardgamegeek_Interface.Boardgamegeek_Interface()
         self.login()
         self.run_main_loop()
 
@@ -54,6 +56,13 @@ class Python_Ui:
             password = input("What would you like your password to be?\n")
             print("You're logged in!")
 
+    def find_game(self):
+        title = input("What game are you thinking of?\n")
+        #Try to look for game in database. If the game isn't there...
+        games = self.bgg.search_for_games(title)
+        choice = self.get_user_choice([game.name.TEXT for game in games])
+        return self.bgg.lookup_game(games[choice-1].objectid)
+
     def run_main_loop(self):
         supported_actions = [
             "Add a Friend",
@@ -68,18 +77,21 @@ class Python_Ui:
             print("What would you like to do?")
             choice = self.get_user_choice(supported_actions)
             match choice:
-                case 0:
-                    print("ADDING FRIEND")
                 case 1:
-                    print("ADDING GAME TO COLLECTION")
+                    print("ADDING FRIEND")
                 case 2:
-                    print("RATING GAME")
+                    print("ADDING GAME TO COLLECTION")
+                    game = self.find_game()
+                    for key in game:
+                        print(game[key])
                 case 3:
-                    print("FINDING GAME")
+                    print("RATING GAME")
                 case 4:
+                    print("FINDING GAME")
+                case 5:
                     print("DELETING ACCOUNT")
                     running = False
-                case 5:
+                case 6:
                     print("QUITTING")
                     running = False
 
