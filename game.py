@@ -35,26 +35,25 @@ class Game(): #
         self.categories = self._load_setup_dict(results,"categories") #category_id:category
         self.game_awards = self._load_setup_dict(results,"awards") # we need to have tuples in here with (award_name,award_year). This is to deal with being able to use it as a primary key
         self.game_mechanics = self._load_setup_dict(results,"mechanics")
-        self.game_publishers = self._load_setup_dict(results,"publshers")
+        self.game_publishers = self._load_setup_dict(results,"publishers")
         self.is_loaded = True
 
     def create_game(self):
         ...
 
     def save_game_to_db(self):
-        try:
-            cur = self.cnx.cursor()
-            cur.execute(f"""CALL add_game({self.game_id},"{self.bg_name}","{self.publication_date}",{self.min_players},{self.max_players},{self.min_player_age},"{self.bg_description}");""")
-            #self._add_designers(cur)
-            self.cnx.commit()
-            cur.close()
-        except pymysql.OperationalError as er:
-            print(er)
-            ...
+  
+        cur = self.cnx.cursor()
+        #cur.execute(f"""CALL add_game({self.game_id},"{self.bg_name}","{self.publication_date}",{self.min_players},{self.max_players},{self.min_player_age},"{self.bg_description}");""")
+        self._add_designers(cur)
+        self.cnx.commit()
+        cur.close()
 
     def _add_designers(self,cur):
         for id,designer in self.designers.items():
             cur.execute(f"CALL add_designer({id},'{designer}',{self.game_id});")
+            print(f"added designer {id},{designer}")
+        self.cnx.commit()
 
     def _load_setup_dict(self,data:dict,kind:str):
         all = data[kind]
@@ -62,14 +61,6 @@ class Game(): #
         for entity in all:
             return_dict[entity["id"]] = entity["name"]
         return return_dict
-            
-
-    def _add_designer(self,designer_id:int,designer_name:str,designer_description:str): #helper function to insert new designer into the database
-        if len(designer_name) <= 0 or len(designer_name) > 64: #check for valid designer name
-            raise AttributeError("Invalid length of designer name")
-        cur = self.cnx.cursor()
-        if self._check_not_present("designer","designer_id",designer_id):
-            ...
 
     def _check_not_present(self,table:str,pk_name:str,pk) -> bool:
         cur = self.cnx.cursor()

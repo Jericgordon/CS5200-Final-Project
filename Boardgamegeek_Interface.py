@@ -77,7 +77,7 @@ class Boardgamegeek_Interface():
             "mechanics": self.extract_category(game, "boardgamemechanic"),
             "categories": self.extract_category(game, "boardgamecategory"),
             "designers": self.extract_category(game, "boardgamedesigner"),
-            "publisher": self.extract_category(game, "boardgamepublisher")
+            "publishers": self.extract_category(game, "boardgamepublisher")
         }
 
         return boardgame
