@@ -66,7 +66,7 @@ class User():
         if (self.status == 0):
             raise PermissionError("Must login first")
         cur = self.cnx.cursor()
-        cur.execute(f'CALL create_collection("{self.username}","{collection_name}",{collection_location});')
+        cur.execute(f'CALL create_collection("{self.username}","{collection_name}","{collection_location}");')
         self.cnx.commit()
         cur.close()
 
@@ -78,7 +78,7 @@ class User():
         self.cnx.commit()
         cur.close()
 
-    def rate_game(self,game_id:int,rating:int,username:str,user_comment:str) -> None:
+    def rate_game(self,game_id:int,rating:int,user_comment:str) -> None:
         if rating < 1 or rating > 10:
             raise AttributeError("Must have attribute between 1 and 10")
         if len(user_comment) > 1024 or user_comment == "":
@@ -86,7 +86,7 @@ class User():
         if self.status != 1:
             raise PermissionError("Must login first")
         cur = self.cnx.cursor()
-        cur.execute(f"""CALL rate_game({self.username},{game_id},{rating},"{user_comment}");""")
+        cur.execute(f"""CALL rate_game('{self.username}',{game_id},{rating},"{user_comment}");""")
         self.cnx.commit()
         cur.close()
 

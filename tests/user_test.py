@@ -51,8 +51,18 @@ class user_tests(unittest.TestCase):
         u.add_friend("test2")
         
     def test_create_collection(self):
-        cnx = self.connect()
-        u = User(cnx)
+        cur = self.connect()
+        u = User(cur)
         #u.create_account("test3","123",datetime.date(1950,12,12))
-        u.login("test3","123")
-        u.create_collection("mycolleciton","home")
+        u.login("tim","test")
+        u.create_collection("my_collection","home")
+
+    def test_add_game_to_collection(self):
+        u = User(self.connect())
+        u.login("tim","test")
+        u.add_game_to_collection("my_collection",98778)
+
+    def test_rate_game(self):
+        u = User(self.connect())
+        u.login("tim","test")
+        u.rate_game(98778,10,"very good game, played a bunch of it")
