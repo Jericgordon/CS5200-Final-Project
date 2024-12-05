@@ -1,3 +1,4 @@
+DROP DATABASE IF EXISTS final_project;
 CREATE DATABASE final_project;
 USE final_project;
 
@@ -26,7 +27,7 @@ CREATE TABLE award (
 	a_name VARCHAR(64)
 	);
     
-    
+
 CREATE TABLE board_game(
 	game_id INT PRIMARY KEY,
     bg_name VARCHAR(64) NOT NULL,
@@ -244,7 +245,7 @@ BEGIN
 			SIGNAL SQLSTATE '45000'
 			set message_text = message;
 	END IF;
-	SELECT COUNT(category) INTO item_exists FROM category WHERE (category.c_id = c_id);
+	SELECT COUNT(c_id) INTO item_exists FROM category WHERE (category.c_id = c_id);
 		IF (item_exists < 1)
 			THEN 
 			INSERT INTO category VALUES(c_id,c_name);
@@ -272,6 +273,7 @@ BEGIN
 			THEN 
 			INSERT INTO publisher VALUES(publisher_id,p_name);
 		END IF;
+	INSERT INTO publishes VALUES(publisher_id,game_id);
 END $$
 
 delimiter ;
@@ -294,6 +296,7 @@ BEGIN
 			THEN 
 			INSERT INTO award VALUES(award_id,a_name);
 		END IF;
+	INSERT INTO game_award VALUES(award_id,game_id);
 END $$
 
 delimiter ;
@@ -317,8 +320,47 @@ END $$
 
 delimiter ;
 
+DROP PROCEDURE IF EXISTS get_potential_friends;
+DELIMITER $$
+CREATE PROCEDURE get_potential_friends(friend_username VARCHAR(64))
+BEGIN
+	SELECT username from app_user
+    WHERE username != friend_username
+    and username not in 
+		(select username_two from friends 
+        where username_one = friend_username);
+END $$
+delimiter ;
+
+DROP PROCEDURE IF EXISTS friend_user;
+DELIMITER $$
+CREATE PROCEDURE friend_user(my_username VARCHAR(64), friend_username VARCHAR(64))
+BEGIN
+	INSERT INTO friends VALUES(my_username, friend_username);
+END $$
+delimiter ;
+
+DROP PROCEDURE IF EXISTS rate_game;
+DELIMITER $$
+
+
+CREATE PROCEDURE rate_game(my_username VARCHAR(64), game_id int, rating int, user_comment varchar(1024))
+BEGIN
+	
+	DECLARE clamped_value INT;
+    DECLARE clamped_string VARCHAR(1024);
+    SET clamped_value = least(greatest(rating, 1), 10);
+    SET clamped_string = LEFT(user_comment, 1024);
+	INSERT INTO rates VALUES(my_username, game_id, clamped_value, clamped_string);
+END $$
+delimiter ;
+
+call rate_game('tim2', 1, 300, 'racial!!');
+select * from rates;
+
 CALL add_game(1024,"test_game","2022",1,10,13,"a game");
 
 -- test inserts
 INSERT INTO app_user VALUES('tim','ee26b0dd4af7e749aa1a8ee3c10ae9923f618980772e473f8819a5d4940e0db27ac185f8a0e1d5f84f88bc887fd67b143732c304cc5fa9ad8e6f57f50028a8ff','2000-10-10');
 
+delete from board_game WHERE game_id = 98778;

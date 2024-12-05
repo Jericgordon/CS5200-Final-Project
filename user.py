@@ -5,7 +5,7 @@ from datetime import date
 
 
 class User():
-    def __init__(self,cnx):
+    def __init__(self,cnx:pymysql.connect):
         self.cnx = cnx
         self.username = ""
         self.status = 0 #we need a marker to see if folks are actually logged in or not, as it would be unwise to keep the password
@@ -54,7 +54,7 @@ class User():
             raise ValueError("Could not find friend to add")
         if (self.status == 0):
             raise PermissionError("Must login first")
-        cur.execute(f"INSERT INTO friends VALUES('{self.username}','{f_username}');")
+        cur.execute(f'CALL friend_user("{self.username}","{f_username}");')
         self.cnx.commit()
         cur.close()
 
@@ -66,23 +66,29 @@ class User():
         if (self.status == 0):
             raise PermissionError("Must login first")
         cur = self.cnx.cursor()
-        cur.execute(f"SELECT MAX(collection_id) FROM collection;")
-        id = cur.fetchone()[0]
-        if id == None:
-            id = 1
-        else:
-            id += 1
-        cur.execute(f"INSERT INTO collection VALUES({id},'{collection_name}','{collection_location}');")
-        cur.execute(f"INSERT INTO owns VALUES('{self.username}',{id}) ")
+        cur.execute(f'CALL create_collection("{self.username}","{collection_name}",{collection_location});')
         self.cnx.commit()
-        cur.close() 
+        cur.close()
 
     def add_game_to_collection(self,name,game_id) -> None:
-        ... # to be implemented after the game class is created
+        if (self.status == 0):
+            raise PermissionError("Must login first")
+        cur = self.cnx.cursor()
+        cur.execute(f'CALL add_game_to_collection("{game_id}","{self.username}","{name}");')
+        self.cnx.commit()
+        cur.close()
 
-    def rate_game(game_id:int,rating:int,username:str,user_comment:str) -> None:
-        ... # to be implemented after the game class is created
-
+    def rate_game(self,game_id:int,rating:int,username:str,user_comment:str) -> None:
+        if rating < 1 or rating > 10:
+            raise AttributeError("Must have attribute between 1 and 10")
+        if len(user_comment) > 1024 or user_comment == "":
+            raise AttributeError("Must have user comment between 1 and 1024 characters")
+        if self.status != 1:
+            raise PermissionError("Must login first")
+        cur = self.cnx.cursor()
+        cur.execute(f"""CALL rate_game({self.username},{game_id},{rating},"{user_comment}");""")
+        self.cnx.commit()
+        cur.close()
 
     
 
