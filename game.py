@@ -46,7 +46,10 @@ class Game(): #
     def save_game_to_db(self):
   
         cur = self.cnx.cursor()
-        cur.execute(f"""CALL add_game({self.game_id},"{self.bg_name}",{self.publication_date},{self.min_players},{self.max_players},{self.min_player_age},"{self.bg_description}");""")
+        try:
+            cur.execute(f"""CALL add_game({self.game_id},"{self.bg_name}",{self.publication_date},{self.min_players},{self.max_players},{self.min_player_age},"{self.bg_description}");""")
+        except pymysql.err.IntegrityError:
+                print(f"{self.game_id} already in database")
         self._add_designers(cur)
         self._add_mechanic(cur)
         self._add_category(cur)
@@ -57,30 +60,44 @@ class Game(): #
 
     def _add_designers(self,cur):
         for id,designer in self.designers.items():
-            cur.execute(f"CALL add_designer({id},'{designer}',{self.game_id});")
-            print(f"added designer {id},{designer}")
+            try:
+                cur.execute(f"CALL add_designer({id},'{designer}',{self.game_id});")
+                print(f"added designer {id},{designer}")
+            except pymysql.err.IntegrityError:
+                print(f"{designer} already in database")
     
 
     def _add_mechanic(self,cur):
         for id,mechanic in self.game_mechanics.items():
-            cur.execute(f"CALL add_mechanic({id},'{mechanic}',{self.game_id});")
-            print(f"added mechanic {id},{mechanic}")
+            try:
+                cur.execute(f"CALL add_mechanic({id},'{mechanic}',{self.game_id});")
+                print(f"added mechanic {id},{mechanic}")
+            except pymysql.err.IntegrityError:
+                print(f"{mechanic} already in database")
         
     def _add_category(self,cur):
         for id,category in self.categories.items():
-            cur.execute(f"CALL add_category({id},'{category}',{self.game_id});")
-            print(f"added category {id},{category}")
+            try:
+                cur.execute(f"CALL add_category({id},'{category}',{self.game_id});")
+                print(f"added category {id},{category}")
+            except pymysql.err.IntegrityError:
+                print(f"{category} already in database")
 
     def _add_publisher(self,cur):
         for id,publisher in self.game_publishers.items():
-            print(f"CALL add_publisher({id},'{publisher}',{self.game_id});")
-            cur.execute(f"CALL add_publisher({id},'{publisher}',{self.game_id});")
-            print(f"added publisher {id},{publisher}")
+            try:
+                cur.execute(f"CALL add_publisher({id},'{publisher}',{self.game_id});")
+                print(f"added publisher {id},{publisher}")
+            except pymysql.err.IntegrityError:
+                print(f"{publisher} already in database")
     
     def _add_award(self,cur):
         for id,award in self.game_awards.items():
-            cur.execute(f"CALL add_award({id},'{award}',{self.game_id});")
-            print(f"added award {id},{award}")
+            try:
+                cur.execute(f"CALL add_award({id},'{award}',{self.game_id});")
+                print(f"added award {id},{award}")
+            except pymysql.err.IntegrityError:
+                print(f"{award} already in database")
 
     def _load_setup_dict(self,data:dict,kind:str):
         all = data[kind]

@@ -1,10 +1,11 @@
 import pymysql
 from user import User
-import unittest
+from ui import Python_Ui
+
 
 def login():
     while True:
-        username = input("What is your username?")
+        username = input("Wha1t is your username?")
         password = input("What is your password?")
         try:
             cnx = pymysql.connect(host='localhost',user = username,password=password,\
@@ -21,6 +22,7 @@ def main():
     cnx = pymysql.connect(host='localhost',user = "root",password="psswd",\
                                 db ='final_project',charset='utf8mb4')
     cur = cnx.cursor()
+    u = Python_Ui(cnx)
 
 
 

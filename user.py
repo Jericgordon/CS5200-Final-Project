@@ -37,15 +37,17 @@ class User():
         cur.execute(f'INSERT INTO app_user VALUES("{username}","{self._hash(password)}","{date_of_birth.year}-{date_of_birth.month}-{date_of_birth.day}");')
         self.cnx.commit()
         cur.close()
+        self.login(username,password)
 
-    def delete_account(self,username,password) -> None:
+    def delete_account(self,username,password) -> int:
         if (self.login(username,password) != 1): #check for valide credentials
-            return
+            return False
         
         cur = self.cnx.cursor()
         cur.execute(f"DELETE FROM app_user WHERE username = '{username}'")
         self.cnx.commit()
         cur.close()
+        return True
 
     def add_friend(self,f_username:str) -> None:
         cur = self.cnx.cursor()
@@ -70,6 +72,15 @@ class User():
         self.cnx.commit()
         cur.close()
 
+    def get_user_collections(self) -> list:
+        if self.status == 0:
+            raise PermissionError("Must login first")
+        cur = self.cnx.cursor()
+        cur.callproc('get_libraries_for', [self.username])
+        lib = cur.fetchall()
+        cur.close()
+        return lib
+
     def add_game_to_collection(self,name,game_id) -> None:
         if (self.status == 0):
             raise PermissionError("Must login first")
@@ -81,7 +92,7 @@ class User():
     def rate_game(self,game_id:int,rating:int,user_comment:str) -> None:
         if rating < 1 or rating > 10:
             raise AttributeError("Must have attribute between 1 and 10")
-        if len(user_comment) > 1024 or user_comment == "":
+        if len(user_comment) > 1024:
             raise AttributeError("Must have user comment between 1 and 1024 characters")
         if self.status != 1:
             raise PermissionError("Must login first")

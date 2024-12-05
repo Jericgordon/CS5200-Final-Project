@@ -301,6 +301,17 @@ END $$
 
 delimiter ;
 
+DROP PROCEDURE IF EXISTS query_game;
+#Finds all games which contain the query as a substring in their title
+DELIMITER $$
+CREATE PROCEDURE query_game(title VARCHAR(64))
+BEGIN
+	select game_id, bg_name 
+    from board_game
+    where bg_name like
+    CONCAT('%', title, '%');
+END$$
+delimiter ;
 
 DROP PROCEDURE IF EXISTS add_game;
 DELIMITER $$

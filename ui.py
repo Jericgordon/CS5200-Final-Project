@@ -9,17 +9,20 @@ Actions contained:
 import pymysql
 import Boardgamegeek_Interface
 import game as g
-
+from user import User
+import datetime
 class Python_Ui:
     """
     Needs to be integrated with User
     """
-    def __init__(self):
+    def __init__(self,cnx:pymysql.connect):
+        self.cnx = cnx
         self.bgg = Boardgamegeek_Interface.Boardgamegeek_Interface()
-        self.login()
+        self.user = self.login()
         self.run_main_loop()
+        
 
-    def get_user_choice(self, options, message="\n"):
+    def get_user_choice(self, options, message="\n"): 
         """
         When given a list of possible choices as strings, 
         enters a loop which repeats until the user selects a valid choice.
@@ -37,27 +40,51 @@ class Python_Ui:
                 user_choice = -1
         return user_choice
     
-    def login(self):
-        print("Welcome to Jen and Ari's Board Game Hub! What would you like to do?")
-        choice = self.get_user_choice(["Login", "Create a New Account"])
-        if choice == 1:
-            while True:
-                # username = input("What is your username?")
-                # password = input("What is your password?")
-                username = "foo"
-                password = "poplop"
+    def _get_birthday(self):
+        while True:
+            year = input("What year were you born?")
+            month = input("What number month were you born?")
+            day = input("What day were you born on?")
+            if year.isnumeric() and month.isnumeric() and day.isnumeric():
                 try:
-                    cnx = pymysql.connect(host='localhost',user = username,password=password,\
-                                    db ='final_project',charset='utf8mb4')
-                    break
-                except pymysql.err.OperationalError:
-                    print("Invalid credentials")
-            self.cnx = cnx
-        else:
-            username = input("What would you like your username to be?\n")
-            password = input("What would you like your password to be?\n")
-            print("You're logged in!")
+                    d = datetime.date(int(year),int(month),int(day))
+                    return d
+                except ValueError:
+                    print("Not a valid date")
+            else:
+                print("Please type only numbers")
 
+
+    def login(self):
+        while True:
+            print("Welcome to Jen and Ari's Board Game Hub! What would you like to do?")
+            choice = self.get_user_choice(["Login", "Create a New Account"])
+            user = User(self.cnx)
+            if choice == 1:
+                while True:
+                    username = input("What is your username?")
+                    password = input("What is your password?")
+                    if len(username) > 64 or len(username) == 0:
+                        print("Invalid length of username")
+                        continue
+                   
+                    user.login(username,password)
+                    if user.status == 1:
+                        print("login successful")
+                        return user
+                    else:
+                        print("INVALID LOGIN")
+            else:
+                while True:
+                    username = input("What would you like your username to be?\n")
+                    password = input("What would you like your password to be?\n")
+                    birthday = self._get_birthday()
+                    try:
+                        user.create_account(username,password,birthday)
+                        return user
+                    except pymysql.err.IntegrityError:
+                        print("username already in use. Please choose another one")
+            
     def find_game(self):
         """
         Queries the database for a game the user wants to review or add to a collection.
@@ -72,7 +99,7 @@ class Python_Ui:
         choices = [game[1] for game in games]
         choices.append("None of the Above")
         choice = self.get_user_choice(choices)
-        if choice < len(games):
+        if choice <= len(games):
             cur.close()
             return games[choice-1][0]
             #Return the ID
@@ -80,17 +107,17 @@ class Python_Ui:
             games = self.bgg.search_for_games(title)
             choice = self.get_user_choice([game.name.TEXT for game in games])
             id = games[choice-1].objectid
+            cur.close()
             game = g.Game(self.cnx)
             game.load_game_from_bgg(id)
             game.save_game_to_db()
-            cur.close()
-            self.cnx.commit()
             return id
     
     def add_friend(self):
         cur = self.cnx.cursor()
-        cur.callproc('get_potential_friends', ('zimbo',))
+        cur.callproc('get_potential_friends', [self.user.username])
         users = cur.fetchall()
+        cur.close()
         choices = []
         for each in users:
             choices.append(each[0])
@@ -100,35 +127,32 @@ class Python_Ui:
         if choice == len(choices):
             return
         print(f"Friending... {choices[choice-1]}")
-        cur.callproc('friend_user', ('zimbo', choices[choice-1]))
-        cur.close()
-        self.cnx.commit()
+        self.user.add_friend(choices[choice-1])
     
     def rate_game(self):
         game = self.find_game()
-        searching = True
-        while searching:
+        rating = "q"
+        while True: # rating input filtering
             rating = input("What would you rate this game (out of five)? ")
-            if rating.isnumeric():
-                searching=False
-                rating = int(rating)
-            else:
+            if not rating.isnumeric(): 
                 print("Sorry, integers only please!")
-        desc = input("What would you like to say about this game?\n")
-        cur = self.cnx.cursor()
-        cur.callproc('rate_game', ('zimbo', game, rating, desc))
-        cur.close()
-        self.cnx.commit()
+            else:
+                rating = int(rating)
+                break
+        while True: #  #description input filtering
+            desc = input("What would you like to say about this game?\n")
+            if len(desc) >= 1024:
+                print("length of comment not supported")
+            else:
+                break
+        self.user.rate_game(game,rating,desc)
 
     def collect_game(self):
         print("Which library are you going to be modifying?")
-        cur = self.cnx.cursor()
-        cur.callproc('get_libraries_for', ('zimbo',))
-        libs = cur.fetchall()
+        libs = self.user.get_user_collections()
         library_names = [lib[1] for lib in libs]
         library_names.append("Add a New Library")
-        choosing = True
-        while choosing:
+        while True:
             #Using a loop here-- the user can keep adding new libraries until they pick one
             choice = self.get_user_choice(library_names)
             if choice == len(library_names):
@@ -139,19 +163,13 @@ class Python_Ui:
                 location = "a"*500
                 while len(location) >=64:
                     location = input("Where is this library located? (max length 64 characters)")
-                cur.callproc("add_library", ["zimbo", name, location])
-                self.cnx.commit()
-            else:
-                choosing = False
-        library_id = libs[choice-1][0]
+                self.user.create_collection(name,location)
+            break
+        library_id = library_names[choice -1]
         print(f"You're working with the library called {libs[choice-1][1]}")
 
         game = self.find_game()
-        print(game)
-        cur.callproc('add_game_to_library', (library_id, game))
-        cur.close()
-        self.cnx.commit()
-        
+        self.user.add_game_to_collection(library_id,game)
 
     def run_main_loop(self):
         
@@ -177,11 +195,13 @@ class Python_Ui:
                 case 4:
                     print("FINDING GAME")
                 case 5:
-                    print("DELETING ACCOUNT")
-                    running = False
+                    
+                    passwd = input("Type your password to confirm")
+                    if self.user.delete_account(self.user.username,passwd):
+                        print("Account Deleted successfully")
+                        running = False
+                    else:
+                        print("Incorrect password, cannot delete")
                 case 6:
                     print("QUITTING")
                     running = False
-
-if __name__ == "__main__":
-    test = Python_Ui()
