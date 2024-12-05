@@ -46,7 +46,8 @@ class Boardgamegeek_Interface():
         Grabs a list of games matching the title. Games will be formatted as ditionaries with name.text, objectid, and yearpublished.text
         """
         results = self.connection.search(title)
-        return results.boardgames.boardgame
+
+        return {result.name.TEXT:result.objectid for result in results.boardgames.boardgame}
     
     def lookup_game(self, id):
         """

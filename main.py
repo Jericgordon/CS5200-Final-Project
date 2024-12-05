@@ -5,8 +5,8 @@ from ui import Python_Ui
 
 def login():
     while True:
-        username = input("Wha1t is your username?")
-        password = input("What is your password?")
+        username = input("Wha1t is your db username?")
+        password = input("What is your db password?")
         try:
             cnx = pymysql.connect(host='localhost',user = username,password=password,\
                                 db ='final_project',charset='utf8mb4')
@@ -21,7 +21,6 @@ def main():
     # cnx = login()
     cnx = pymysql.connect(host='localhost',user = "root",password="psswd",\
                                 db ='final_project',charset='utf8mb4')
-    cur = cnx.cursor()
     u = Python_Ui(cnx)
 
 

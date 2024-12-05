@@ -40,11 +40,7 @@ class Game(): #
         self.game_publishers = self._load_setup_dict(results,"publishers")
         self.is_loaded = True
 
-    def create_game(self):
-        ...
-
     def save_game_to_db(self):
-  
         cur = self.cnx.cursor()
         try:
             cur.execute(f"""CALL add_game({self.game_id},"{self.bg_name}",{self.publication_date},{self.min_players},{self.max_players},{self.min_player_age},"{self.bg_description}");""")
@@ -112,6 +108,13 @@ class Game(): #
         if cur.fetchone() != None:
             return False
         return True
+    
+    def get_list_of_games_in_db(self,title) -> dict:
+        cur = self.cnx.cursor()
+        cur.callproc('query_game', (title,))
+        games = cur.fetchall()
+        cur.close()
+        return {game[1]:game[0] for game in games}
 
         
 # add a game ->

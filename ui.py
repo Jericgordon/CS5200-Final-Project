@@ -19,6 +19,7 @@ class Python_Ui:
         self.cnx = cnx
         self.bgg = Boardgamegeek_Interface.Boardgamegeek_Interface()
         self.user = self.login()
+        self.game_object = g.Game(cnx) #not really for storing a game, but for game operations
         self.run_main_loop()
         
 
@@ -62,8 +63,10 @@ class Python_Ui:
             user = User(self.cnx)
             if choice == 1:
                 while True:
-                    username = input("What is your username?")
-                    password = input("What is your password?")
+                    # username = input("What is your username?")
+                    # password = input("What is your password?")
+                    username = "tim"
+                    password = "test"
                     if len(username) > 64 or len(username) == 0:
                         print("Invalid length of username")
                         continue
@@ -92,42 +95,35 @@ class Python_Ui:
         """
         title = input("What game are you thinking of?\n")
         #Try to look for game in database.
-        cur = self.cnx.cursor()
-        cur.callproc('query_game', (title,))
-        games = cur.fetchall()
+
         print("Is the game you have in mind contained below?")
-        choices = [game[1] for game in games]
+      
+        results = self.game_object.get_list_of_games_in_db(title)
+        choices = [key for key in results.keys()]
         choices.append("None of the Above")
         choice = self.get_user_choice(choices)
-        if choice <= len(games):
-            cur.close()
-            return games[choice-1][0]
+        if choice < len(choices):
+            return results[choices[choice-1]]
             #Return the ID
         else:
             games = self.bgg.search_for_games(title)
-            choice = self.get_user_choice([game.name.TEXT for game in games])
-            id = games[choice-1].objectid
-            cur.close()
+            options = [key for key in games.keys()]
+            choice = self.get_user_choice(options)
+            id = games[options[choice]]
             game = g.Game(self.cnx)
             game.load_game_from_bgg(id)
             game.save_game_to_db()
             return id
     
     def add_friend(self):
-        cur = self.cnx.cursor()
-        cur.callproc('get_potential_friends', [self.user.username])
-        users = cur.fetchall()
-        cur.close()
-        choices = []
-        for each in users:
-            choices.append(each[0])
-        choices.append("None")
+        user_list = self.user.get_potential_friends()
+        user_list.append("None")
         print("Which of the following users would you like to befriend?")
-        choice = self.get_user_choice(choices)
-        if choice == len(choices):
+        choice = self.get_user_choice(user_list)
+        if choice == len(user_list):
             return
-        print(f"Friending... {choices[choice-1]}")
-        self.user.add_friend(choices[choice-1])
+        print(f"Friending... {user_list[choice-1]}")
+        self.user.add_friend(user_list[choice-1])
     
     def rate_game(self):
         game = self.find_game()
@@ -150,12 +146,12 @@ class Python_Ui:
     def collect_game(self):
         print("Which library are you going to be modifying?")
         libs = self.user.get_user_collections()
-        library_names = [lib[1] for lib in libs]
-        library_names.append("Add a New Library")
+
+        libs.append("Add a New Library")
         while True:
             #Using a loop here-- the user can keep adding new libraries until they pick one
-            choice = self.get_user_choice(library_names)
-            if choice == len(library_names):
+            choice = self.get_user_choice(libs)
+            if choice == len(libs):
                 #This indicates that the user wishes to create a new library
                 name = "a"*500
                 while len(name) >=64:
@@ -164,12 +160,15 @@ class Python_Ui:
                 while len(location) >=64:
                     location = input("Where is this library located? (max length 64 characters)")
                 self.user.create_collection(name,location)
+                library_name = name
+            else:
+                library_name = libs[choice-1]
             break
-        library_id = library_names[choice -1]
-        print(f"You're working with the library called {libs[choice-1][1]}")
+
+        print(f"You're working with the library called {library_name}")
 
         game = self.find_game()
-        self.user.add_game_to_collection(library_id,game)
+        self.user.add_game_to_collection(library_name,game)
 
     def run_main_loop(self):
         
