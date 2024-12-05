@@ -56,7 +56,7 @@ class User():
             raise ValueError("Could not find friend to add")
         if (self.status == 0):
             raise PermissionError("Must login first")
-        cur.call_proc("friend_user",[self.username,f_username])
+        cur.callproc("friend_user",[self.username,f_username])
         self.cnx.commit()
         cur.close()
 
@@ -80,6 +80,23 @@ class User():
         libs = cur.fetchall()
         cur.close()
         return [lib[1] for lib in libs]
+    
+    def get_list_of_friends(self) -> list:
+        if self.status == 0:
+            raise PermissionError("Must login first")
+        cur = self.cnx.cursor()
+        cur.callproc('get_friends_of', [self.username])
+        friends = cur.fetchall()
+        return [tuple[0] for tuple in friends]
+
+
+    def get_friends_libraries(self,friend) -> dict:
+        if self.status == 0:
+            raise PermissionError("Must login first")
+        cur = self.cnx.cursor()
+        cur.callproc('get_libraries_for', [friend])
+        libraries_tuple = cur.fetchall()
+        return {tuple[1]:tuple[0] for tuple in libraries_tuple}
 
     def add_game_to_collection(self,name,game_id) -> None:
         if (self.status == 0):
@@ -96,6 +113,19 @@ class User():
         cur.close()
         return [user[0] for user in users] 
 
+    def get_recommendations_from(self,library_id:int):
+        cur = self.cnx.cursor()
+        cur.callproc("recommend_games_from_library",[self.username, library_id])
+        results = cur.fetchall()
+        cur.close()
+        return results
+    
+    def get_recommended_games_from_all(self):
+        cur = self.cnx.cursor()
+        cur.callproc("recommend_games", [self.username])
+        res = cur.fetchall()
+        cur.close()
+        return res
 
     def rate_game(self,game_id:int,rating:int,user_comment:str) -> None:
         if rating < 1 or rating > 10:

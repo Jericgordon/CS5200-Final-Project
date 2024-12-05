@@ -155,6 +155,7 @@ class Python_Ui:
                 break
         self.user.rate_game(game,rating,desc)
 
+
     def collect_game(self):
         print("Which library are you going to be modifying?")
         libs = self.user.get_user_collections()
@@ -181,6 +182,42 @@ class Python_Ui:
 
         game = self.find_game()
         self.user.add_game_to_collection(library_name,game)
+
+
+    def query_games(self):
+        print("Would you like to find a game to play in a friend's library, or find a brand new game to try?")
+        choice = self.get_user_choice(["Check a friend's library", "Query all known games"])
+        cur = self.cnx.cursor()
+
+        if choice == 1:
+            #Case that we are examining a friend's library
+            friends = self.user.get_list_of_friends()
+            friends.append("I changed my mind")
+            friend = self.get_user_choice(friends)
+            if friend == len(friends):
+                choice = 2
+                #switch to other case
+            else:
+                friend = friends[friend-1]
+                print("Which library would you like to query?")
+                libarary_results = self.user.get_friends_libraries(friend)
+                libraries = [library for library in libarary_results.keys()]
+                libraries.append("query all libraries")
+                choice = self.get_user_choice(libraries)
+                if choice < len(libraries):
+                    library_id = libarary_results[libraries[choice]] #Accessing library ID
+                    response = self.user.get_recommendations_from(library_id)
+                else:
+                    response = self.user.get_recommended_games_from_all()
+
+        if choice == 2:
+            #Case that we are querying ALL libraries
+            response = self.user.get_recommended_games_from_all()
+        if response == None:
+            print("No valid games to rate")
+        else:
+            for each in response:
+                print(f"We think you'll rate {each[0]} a {each[2]:.2f}")
 
     def run_main_loop(self):
         
