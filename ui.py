@@ -63,8 +63,8 @@ class Python_Ui:
             user = User(self.cnx)
             if choice == 1:
                 while True:
-                    # username = input("What is your username?")
-                    # password = input("What is your password?")
+                    username = input("What is your username?")
+                    password = input("What is your password?")
                     username = "tim"
                     password = "test"
                     if len(username) > 64 or len(username) == 0:
@@ -131,11 +131,14 @@ class Python_Ui:
         if review != None:
             print("You have already reviewed this game.")
             print(f"You wrote: {review}")
-            options = ["Edit the review","Delete the review"]
+            options = ["Edit the review","Delete the review","go back"]
             choice = self.get_user_choice(options)
-            if choice == 2:
-                self.user.delete_review(game)
+            if choice == 3: #leaves the revew as is
                 return
+            self.user.delete_review(game) # both other options require deleting the game
+            if choice == 2: 
+                return
+            
         rating = "q"
         while True: # rating input filtering
             rating = input("What would you rate this game (out of ten)? ")

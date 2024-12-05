@@ -56,7 +56,7 @@ class User():
             raise ValueError("Could not find friend to add")
         if (self.status == 0):
             raise PermissionError("Must login first")
-        cur.execute(f'CALL friend_user("{self.username}","{f_username}");')
+        cur.call_proc("friend_user",[self.username,f_username])
         self.cnx.commit()
         cur.close()
 
@@ -105,7 +105,7 @@ class User():
         if self.status != 1:
             raise PermissionError("Must login first")
         cur = self.cnx.cursor()
-        cur.execute(f"""CALL rate_game('{self.username}',{game_id},{rating},"{user_comment}");""")
+        cur.callproc("rate_game",[self.username,game_id,rating,user_comment])
         self.cnx.commit()
         cur.close()
 

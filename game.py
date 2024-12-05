@@ -90,7 +90,7 @@ class Game(): #
     def _add_award(self,cur):
         for id,award in self.game_awards.items():
             try:
-                cur.execute(f"CALL add_award({id},'{award}',{self.game_id});")
+                cur.callproc("add_award",[id,award,self.game_id])
                 print(f"added award {id},{award}")
             except pymysql.err.IntegrityError:
                 print(f"{award} already in database")
@@ -115,6 +115,7 @@ class Game(): #
         games = cur.fetchall()
         cur.close()
         return {game[1]:game[0] for game in games}
+
 
         
 # add a game ->
