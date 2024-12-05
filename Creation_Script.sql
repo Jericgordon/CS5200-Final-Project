@@ -244,7 +244,7 @@ BEGIN
 			SIGNAL SQLSTATE '45000'
 			set message_text = message;
 	END IF;
-	SELECT COUNT(category) INTO item_exists FROM category WHERE (category.c_id = c_id);
+	SELECT COUNT(c_id) INTO item_exists FROM category WHERE (category.c_id = c_id);
 		IF (item_exists < 1)
 			THEN 
 			INSERT INTO category VALUES(c_id,c_name);
@@ -322,4 +322,5 @@ CALL add_game(1024,"test_game","2022",1,10,13,"a game");
 -- test inserts
 INSERT INTO app_user VALUES('tim','ee26b0dd4af7e749aa1a8ee3c10ae9923f618980772e473f8819a5d4940e0db27ac185f8a0e1d5f84f88bc887fd67b143732c304cc5fa9ad8e6f57f50028a8ff','2000-10-10');
 call add_category(1042,'Expansion for Base-game',1024);
-select * from board_game;
+select * from publisher;
+DESCRIBE category;

@@ -26,12 +26,12 @@ class Boardgamegeek_Interface():
             if isinstance(category_items, list):
                 for item in category_items:
                     items.append({
-                        "name": getattr(item, "TEXT", None),
+                        "name": getattr(item, "TEXT", None).replace("'", "")[0:63],
                         "id": getattr(item, "objectid", None)
                     })
             else:
                 items.append({
-                    "name": getattr(category_items, "TEXT", None),
+                    "name": getattr(category_items, "TEXT", None).replace("'", "")[0:63],
                     "id": getattr(category_items, "objectid", None)
                 })
         except KeyError:
@@ -57,7 +57,7 @@ class Boardgamegeek_Interface():
         results = self.connection.get_game(id , stats=False)
         game = results.boardgames.boardgame
         if isinstance(game.name, list):
-            game.name = game.name[0].TEXT
+            game.name = next((item['TEXT'] for item in game.name if item.get('primary') == 'true'), None)
         else:
             game.name = game.name.TEXT
 
@@ -65,13 +65,13 @@ class Boardgamegeek_Interface():
         boardgame= {
             "boardgame_details" : 
                 {
-                    "gameID":game.objectid,
-                    "name":game.name,
-                    "publication date":game.yearpublished.TEXT,
-                    "min players":game.minplayers.TEXT,
-                    "max players":game.maxplayers.TEXT,
-                    "min age": game.age.TEXT,
-                    "description": game.description.TEXT.replace("<br/><br/>","\n")
+                    "gameID":game.objectid.replace("'", ""),
+                    "name":game.name.replace("'", "")[0:63],
+                    "publication date":game.yearpublished.TEXT.replace("'", ""),
+                    "min players":game.minplayers.TEXT.replace("'", ""),
+                    "max players":game.maxplayers.TEXT.replace("'", ""),
+                    "min age": game.age.TEXT.replace("'", ""),
+                    "description": game.description.TEXT.replace("<br/><br/>","\n").replace("'", "")
                 },
             "awards":self.extract_category(game, "boardgamehonor"),
             "mechanics": self.extract_category(game, "boardgamemechanic"),
@@ -81,51 +81,6 @@ class Boardgamegeek_Interface():
         }
 
         return boardgame
-
-
-        
-
-    def sample_game(self, id):
-        """
-        More of a 'toy' function that ensures that I understand how to fetch everything I need from a BGG lookup
-        """
-        results = self.connection.get_game(id , stats=False)
-        game = results.boardgames.boardgame
-        print("Below is all information that will be stored in board_game:")
-        print(f"- gameID: {game.objectid}")
-        game.name = game.name[0].TEXT
-        print(f"- name: {game.name}")
-        print(f"- publication date: {game.yearpublished.TEXT}")
-        print(f"- min players: {game.minplayers.TEXT}")
-        print(f"- max players: {game.maxplayers.TEXT}")
-        print(f"- min age: {game.age.TEXT}")
-        print(f"- description: {game.description.TEXT}")
-
-        print(f"\nMechanics for {game.name}:")
-        for mechanic in game.boardgamemechanic:
-            print(f"- {mechanic.TEXT} with ID {mechanic.objectid}")
-
-        print(f"\nCategories for {game.name}:")
-        for category in game.boardgamecategory:
-            print(f"- {category.TEXT} with ID {category.objectid}")
-
-        if hasattr(game, "boardgamehonor"):
-            print(f"\nAwards for {game.name}:")
-            if isinstance(game.boardgamehonor, list):
-                for honor in game.boardgamehonor:
-                    print(f"- {honor.TEXT} with ID {honor.objectid}")
-            else:
-                print(f"- {game.boardgamehonor.TEXT} with ID {game.boardgamehonor.objectid}")
-        else:
-            print(f"\nNo awards information available for {game.name}.")
-        
-        print(f"\nDesigned by:")
-        for designer in game.boardgamedesigner:
-            print(f"- {designer.TEXT} with ID {designer.objectid}")
-        
-        print(f"\nPublished by:")
-        for publisher in game.boardgamepublisher:
-            print(f"- {publisher.TEXT} with ID {publisher.objectid}")
     
 if __name__ == "__main__":
     import pymysql
@@ -140,9 +95,11 @@ if __name__ == "__main__":
     gameobj = game.Game(cnx)
     bgg = Boardgamegeek_Interface()
     games = bgg.search_for_games("Wingspan")
-    game = games[0]
+    game = games[1]
+    print(game)
     id = game.objectid
     gameobj.load_game_from_bgg(id)
-    gameobj.save_game_to_db()
+    print(gameobj.bg_name)
+    # gameobj.save_game_to_db()
 
     

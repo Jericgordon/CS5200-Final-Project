@@ -32,5 +32,57 @@ BEGIN
 END $$
 delimiter ;
 
-call rate_game('tim2', 1, 300, 'racial!!');
-select * from rates;
+DROP PROCEDURE IF EXISTS query_game;
+#Finds all games which contain the query as a substring in their title
+DELIMITER $$
+CREATE PROCEDURE query_game(title VARCHAR(64))
+BEGIN
+	select game_id, bg_name 
+    from board_game
+    where bg_name like
+    CONCAT('%', title, '%');
+END$$
+delimiter ;
+
+DROP PROCEDURE IF EXISTS add_library;
+#Creates a library belonging to a user
+DELIMITER $$
+CREATE PROCEDURE add_library(username VARCHAR(64), collection_name VARCHAR(64), location VARCHAR(64))
+BEGIN
+	DECLARE c_id INT;
+	    INSERT INTO collection (name, location) VALUES (collection_name, location);
+    SET c_id = LAST_INSERT_ID();
+    INSERT INTO owns (username, collection_id) VALUES (username, c_id);
+END$$
+delimiter ;
+
+DROP PROCEDURE IF EXISTS get_libraries_for;
+#Fetches all libraries belonging to a specific user
+DELIMITER $$
+CREATE PROCEDURE get_libraries_for(username VARCHAR(64))
+BEGIN
+	select collection_id, name 
+		from collection 
+        inner join owns using (collection_id)
+        where owns.username = username;
+END$$
+delimiter ;
+
+DROP PROCEDURE IF EXISTS add_game_to_library;
+#Inserts a copy of a specified game into a library
+DELIMITER $$
+CREATE PROCEDURE add_game_to_library(collection_id int, game_id int)
+BEGIN
+	INSERT INTO owns (collection_id, game_id) VALUES (collection_id, game_id);
+END$$
+delimiter ;
+
+call get_libraries_for('bimbo');
+call add_library('zimbo', 'Zimbo Games', 'Hell');	
+
+describe collection;
+
+insert into app_user value('zimbo', 123123, '1999-12-23');
+call add_library('zimbo', 'Zimbo Games', 'Hell');
+select * from board_game;
+select game_id, bg_name from board_game where bg_name like CONCAT('%', "e", '%');

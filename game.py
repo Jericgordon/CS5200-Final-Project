@@ -73,6 +73,7 @@ class Game(): #
 
     def _add_publisher(self,cur):
         for id,publisher in self.game_publishers.items():
+            print(f"CALL add_publisher({id},'{publisher}',{self.game_id});")
             cur.execute(f"CALL add_publisher({id},'{publisher}',{self.game_id});")
             print(f"added publisher {id},{publisher}")
     
