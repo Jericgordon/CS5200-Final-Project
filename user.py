@@ -77,9 +77,9 @@ class User():
             raise PermissionError("Must login first")
         cur = self.cnx.cursor()
         cur.callproc('get_libraries_for', [self.username])
-        lib = cur.fetchall()
+        libs = cur.fetchall()
         cur.close()
-        return lib
+        return [lib[1] for lib in libs]
 
     def add_game_to_collection(self,name,game_id) -> None:
         if (self.status == 0):
@@ -88,6 +88,14 @@ class User():
         cur.execute(f'CALL add_game_to_collection("{game_id}","{self.username}","{name}");')
         self.cnx.commit()
         cur.close()
+    
+    def get_potential_friends(self) -> list: #users need a list of users they could friend
+        cur = self.cnx.cursor()
+        cur.callproc('get_potential_friends', [self.username])
+        users = cur.fetchall()
+        cur.close()
+        return [user[0] for user in users] 
+
 
     def rate_game(self,game_id:int,rating:int,user_comment:str) -> None:
         if rating < 1 or rating > 10:
