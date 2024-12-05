@@ -31,6 +31,8 @@ class Game(): #
         self.max_players = results["boardgame_details"]["max players"]
         self.min_player_age = results["boardgame_details"]["min age"]
         self.bg_description = results["boardgame_details"]["description"]
+        if len(self.bg_description) > 1024:
+            self.bg_description = self.bg_description[0:1023]
         self.designers = self._load_setup_dict(results,"designers") # {designer_id:designer}
         self.categories = self._load_setup_dict(results,"categories") #category_id:category
         self.game_awards = self._load_setup_dict(results,"awards") # we need to have tuples in here with (award_name,award_year). This is to deal with being able to use it as a primary key

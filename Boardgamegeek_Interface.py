@@ -128,14 +128,21 @@ class Boardgamegeek_Interface():
             print(f"- {publisher.TEXT} with ID {publisher.objectid}")
     
 if __name__ == "__main__":
+    import pymysql
+    import game
+    username = "foo"
+    password = "poplop"
+    try:
+        cnx = pymysql.connect(host='localhost',user = username,password=password,\
+                                    db ='final_project',charset='utf8mb4')
+    except pymysql.err.OperationalError:
+        print("Invalid credentials")
+    gameobj = game.Game(cnx)
     bgg = Boardgamegeek_Interface()
-    # games = bgg.search_for_games("Arcadia Quest")
-    # for game in games:
-    #     print(f"I found {game.name.TEXT}")
-
-    id = 185784
-    thingy = bgg.lookup_game(id)
-    for each in thingy:
-        print(thingy[each])
+    games = bgg.search_for_games("Wingspan")
+    game = games[0]
+    id = game.objectid
+    gameobj.load_game_from_bgg(id)
+    gameobj.save_game_to_db()
 
     

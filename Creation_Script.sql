@@ -31,7 +31,7 @@ CREATE TABLE award (
 CREATE TABLE board_game(
 	game_id INT PRIMARY KEY,
     bg_name VARCHAR(64) NOT NULL,
-    publication_date YEAR,
+    publication_date INT,
     min_players INT CHECK(min_players > 0),
     max_players INT CHECK(max_players > 0),
     min_player_age INT,
@@ -304,7 +304,7 @@ delimiter ;
 
 DROP PROCEDURE IF EXISTS add_game;
 DELIMITER $$
-CREATE PROCEDURE add_game(game_id INT,bg_name VARCHAR(64),publication_date YEAR,min_players INT,max_players INT,min_player_age INT,bg_description VARCHAR(1024))
+CREATE PROCEDURE add_game(game_id INT,bg_name VARCHAR(64),publication_date INT,min_players INT,max_players INT,min_player_age INT,bg_description VARCHAR(1024))
 BEGIN
 	DECLARE item_exists INT;
     DECLARE message VARCHAR(64);
@@ -408,5 +408,5 @@ CALL add_game(1024,"test_game","2022",1,10,13,"a game");
 
 -- test inserts
 INSERT INTO app_user VALUES('tim','ee26b0dd4af7e749aa1a8ee3c10ae9923f618980772e473f8819a5d4940e0db27ac185f8a0e1d5f84f88bc887fd67b143732c304cc5fa9ad8e6f57f50028a8ff','2000-10-10');
-
-delete from board_game WHERE game_id = 98778;
+call add_category(1042,'Expansion for Base-game',1024);
+select * from board_game;
