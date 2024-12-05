@@ -109,6 +109,20 @@ class User():
         self.cnx.commit()
         cur.close()
 
+    def get_review(self,game_id:int):
+        if self.status != 1:
+            raise PermissionError("Must login first")
+        cur = self.cnx.cursor()
+        cur.callproc("get_review",[self.username,game_id])
+        res = cur.fetchone()
+        cur.close()
+        return res
+    
+    def delete_review(self,game_id:int)-> None:
+        cur = self.cnx.cursor()
+        cur.execute(f'DELETE FROM rates WHERE username = "{self.username}" AND game_id = {game_id}')
+        self.cnx.commit()
+        cur.close()
     
 
 

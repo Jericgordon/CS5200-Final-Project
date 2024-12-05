@@ -127,6 +127,15 @@ class Python_Ui:
     
     def rate_game(self):
         game = self.find_game()
+        review = self.user.get_review(game)
+        if review != None:
+            print("You have already reviewed this game.")
+            print(f"You wrote: {review}")
+            options = ["Edit the review","Delete the review"]
+            choice = self.get_user_choice(options)
+            if choice == 2:
+                self.user.delete_review(game)
+                return
         rating = "q"
         while True: # rating input filtering
             rating = input("What would you rate this game (out of ten)? ")
