@@ -129,7 +129,7 @@ class Python_Ui:
         game = self.find_game()
         rating = "q"
         while True: # rating input filtering
-            rating = input("What would you rate this game (out of five)? ")
+            rating = input("What would you rate this game (out of ten)? ")
             if not rating.isnumeric(): 
                 print("Sorry, integers only please!")
             else:
@@ -192,7 +192,7 @@ class Python_Ui:
                 case 3:
                     self.rate_game()
                 case 4:
-                    print("FINDING GAME")
+                    self.query_games()
                 case 5:
                     
                     passwd = input("Type your password to confirm")

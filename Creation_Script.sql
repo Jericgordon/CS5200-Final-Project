@@ -27,7 +27,6 @@ CREATE TABLE award (
 	a_name VARCHAR(64)
 	);
     
-
 CREATE TABLE board_game(
 	game_id INT PRIMARY KEY,
     bg_name VARCHAR(64) NOT NULL,
