@@ -134,7 +134,7 @@ class Python_Ui:
         game = self.find_game()
         rating = "q"
         while True: # rating input filtering
-            rating = input("What would you rate this game (out of five)? ")
+            rating = input("What would you rate this game (out of ten)? ")
             if not rating.isnumeric(): 
                 print("Sorry, integers only please!")
             else:
@@ -166,8 +166,8 @@ class Python_Ui:
                     location = input("Where is this library located? (max length 64 characters)")
                 self.user.create_collection(name,location)
             break
-        library_id = library_names[choice -1]
-        print(f"You're working with the library called {libs[choice-1][1]}")
+        library_id = libs[choice -1]
+        print(f"You're working with the library called {library_names[choice-1]}")
 
         game = self.find_game()
         self.user.add_game_to_collection(library_id,game)
@@ -201,7 +201,9 @@ class Python_Ui:
         if choice == 2:
             #Case that we are querying ALL libraries
             cur.callproc("recommend_games", ("zimbo",))
-        #NO PRINT EXISTS YET. DECIDE HOW WE WANT TO DISPLAY THIS
+        response = cur.fetchall()
+        for each in response:
+            print(f"We think you'll rate {each[0]} a {each[2]:.2f}")
         
 
     def run_main_loop(self):
