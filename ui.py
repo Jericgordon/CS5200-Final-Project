@@ -100,8 +100,7 @@ class Python_Ui:
         choices.append("None of the Above")
         choice = self.get_user_choice(choices)
 <<<<<<< HEAD
-        if choice <= len(games):
-=======
+
         if choices[choice-1] != "None of the Above":
 >>>>>>> recommender
             cur.close()
@@ -176,11 +175,7 @@ class Python_Ui:
         game = self.find_game()
 <<<<<<< HEAD
         self.user.add_game_to_collection(library_id,game)
-=======
-        print(game)
-        cur.callproc('add_game_to_library', (library_id, game))
-        cur.close()
-        self.cnx.commit()
+
     
     def query_games(self):
         print("Would you like to find a game to play in a friend's library, or find a brand new game to try?")
