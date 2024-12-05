@@ -105,18 +105,18 @@ class Python_Ui:
         self.cnx.commit()
     
     def rate_game(self):
-        # game = self.find_game()
+        game = self.find_game()
         searching = True
         while searching:
-            rating = input("What would you rate this game (out of ten)?")
+            rating = input("What would you rate this game (out of five)? ")
             if rating.isnumeric():
                 searching=False
                 rating = int(rating)
             else:
                 print("Sorry, integers only please!")
-        desc = input("What would you like to say about this game?")
+        desc = input("What would you like to say about this game?\n")
         cur = self.cnx.cursor()
-        cur.callproc('rate_game', ('zimbo', 1, rating, desc))
+        cur.callproc('rate_game', ('zimbo', game, rating, desc))
         cur.close()
         self.cnx.commit()
 
