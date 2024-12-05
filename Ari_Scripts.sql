@@ -147,8 +147,15 @@ BEGIN
 END$$
 DELIMITER ;
 
-call recommend_games("elan");
-select * from collection;
-call recommend_games_from_library("elan", 1);
-call get_libraries_for("elan");
-call get_friends_of("zimbo");
+DROP PROCEDURE IF EXISTS update_rating;
+	#Orders games by how likely a user is to enjoy playing them
+    #Not an ideal way to do it, but this reuses a lot of code from recommend_games
+DELIMITER $$
+CREATE PROCEDURE update_rating(user_name varchar(64), edited_game_id int, new_rating int, new_comment varchar(1024))
+BEGIN
+	UPDATE rates
+	SET rating=new_rating, user_comment = new_comment
+	WHERE (username=user_name AND game_id=edited_game_id);
+END$$
+DELIMITER ;
+

@@ -506,6 +506,17 @@ BEGIN
 END$$
 delimiter ;
 
+DROP PROCEDURE IF EXISTS update_rating;
+	#Updates a rated game already in the database
+DELIMITER $$
+CREATE PROCEDURE update_rating(user_name varchar(64), edited_game_id int, new_rating int, new_comment varchar(1024))
+BEGIN
+	UPDATE rates
+	SET rating=new_rating, user_comment = new_comment
+	WHERE (username=user_name AND game_id=edited_game_id);
+END$$
+DELIMITER ;
+
 select * from rates;
 
 CALL add_game(1024,"test_game","2022",1,10,13,"a game");

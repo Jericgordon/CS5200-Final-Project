@@ -153,6 +153,12 @@ class User():
         cur.execute(f'DELETE FROM rates WHERE username = "{self.username}" AND game_id = {game_id}')
         self.cnx.commit()
         cur.close()
+
+    def edit_review(self, game_id:int, new_rating:int, new_description:str)->None:
+        cur = self.cnx.cursor()
+        cur.execute('update_rating', (self.username, game_id, new_rating, new_description))
+        self.cnx.commit()
+        cur.close()
     
 
 

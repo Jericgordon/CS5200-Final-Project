@@ -55,6 +55,22 @@ class Python_Ui:
             else:
                 print("Please type only numbers")
 
+    def _get_rating_and_description(self):
+        rating = "q"
+        while True: # rating input filtering
+            rating = input("What would you rate this game (out of ten)? ")
+            if not rating.isnumeric(): 
+                print("Sorry, integers only please!")
+            else:
+                rating = int(rating)
+                break
+        while True: #  #description input filtering
+            desc = input("What would you like to say about this game?\n")
+            if len(desc) >= 1024:
+                print("length of comment not supported")
+            else:
+                break
+        return (rating, desc)
 
     def login(self):
         while True:
@@ -109,7 +125,7 @@ class Python_Ui:
             games = self.bgg.search_for_games(title)
             options = [key for key in games.keys()]
             choice = self.get_user_choice(options)
-            id = games[options[choice]]
+            id = games[options[choice-1]]
             game = g.Game(self.cnx)
             game.load_game_from_bgg(id)
             game.save_game_to_db()
@@ -135,24 +151,15 @@ class Python_Ui:
             choice = self.get_user_choice(options)
             if choice == 3: #leaves the revew as is
                 return
-            self.user.delete_review(game) # both other options require deleting the game
+            self.user.delete_review(game) # Deletes the game
             if choice == 2: 
                 return
+            else:
+                rating, desc = self._get_rating_and_description()
+                self.user.edit_review(game, rating, desc)
+                return
             
-        rating = "q"
-        while True: # rating input filtering
-            rating = input("What would you rate this game (out of ten)? ")
-            if not rating.isnumeric(): 
-                print("Sorry, integers only please!")
-            else:
-                rating = int(rating)
-                break
-        while True: #  #description input filtering
-            desc = input("What would you like to say about this game?\n")
-            if len(desc) >= 1024:
-                print("length of comment not supported")
-            else:
-                break
+        rating, desc = self._get_rating_and_description()
         self.user.rate_game(game,rating,desc)
 
 
@@ -218,6 +225,7 @@ class Python_Ui:
         else:
             for each in response:
                 print(f"We think you'll rate {each[0]} a {each[2]:.2f}")
+            input("Press enter to continue")
 
     def run_main_loop(self):
         
@@ -231,7 +239,7 @@ class Python_Ui:
         ]
         running = True
         while running:
-            print("What would you like to do?")
+            print("\nWhat would you like to do?")
             choice = self.get_user_choice(supported_actions)
             match choice:
                 case 1:
@@ -244,12 +252,12 @@ class Python_Ui:
                     self.query_games()
                 case 5:
                     
-                    passwd = input("Type your password to confirm")
+                    passwd = input("Type your password to confirm\n")
                     if self.user.delete_account(self.user.username,passwd):
                         print("Account Deleted successfully")
                         running = False
                     else:
-                        print("Incorrect password, cannot delete")
+                        print("Incorrect password, cannot delete\n")
                 case 6:
                     print("QUITTING")
                     running = False
