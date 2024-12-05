@@ -99,10 +99,7 @@ class Python_Ui:
         choices = [game[1] for game in games]
         choices.append("None of the Above")
         choice = self.get_user_choice(choices)
-<<<<<<< HEAD
-
         if choices[choice-1] != "None of the Above":
->>>>>>> recommender
             cur.close()
             id = games[choice-1][0]
             return id
@@ -173,7 +170,6 @@ class Python_Ui:
         print(f"You're working with the library called {libs[choice-1][1]}")
 
         game = self.find_game()
-<<<<<<< HEAD
         self.user.add_game_to_collection(library_id,game)
 
     
@@ -207,7 +203,6 @@ class Python_Ui:
             cur.callproc("recommend_games", ("zimbo",))
         #NO PRINT EXISTS YET. DECIDE HOW WE WANT TO DISPLAY THIS
         
->>>>>>> recommender
 
     def run_main_loop(self):
         
