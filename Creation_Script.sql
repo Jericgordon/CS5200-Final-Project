@@ -376,7 +376,7 @@ BEGIN
     if (max_val is null)
 		then set max_val = 1;
 	END IF;
-    SELECT count(collection_id) INTO item_exists FROM collection join owns USING(collection_id) WHERE (owns.username = username) and (collection_name = collection_name);
+    SELECT count(collection.collection_id) INTO item_exists FROM collection join owns USING(collection_id) WHERE (owns.username = my_username) and (collection.name = collection_name);
     if (item_exists >= 1)
 		then
 		set message = CONCAT("board game collection ",collection_name," already exists");
