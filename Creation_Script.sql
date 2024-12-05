@@ -1,3 +1,4 @@
+DROP DATABASE IF EXISTS final_project;
 CREATE DATABASE final_project;
 USE final_project;
 
@@ -26,7 +27,7 @@ CREATE TABLE award (
 	a_name VARCHAR(64)
 	);
     
-    
+
 CREATE TABLE board_game(
 	game_id INT PRIMARY KEY,
     bg_name VARCHAR(64) NOT NULL,
@@ -272,6 +273,7 @@ BEGIN
 			THEN 
 			INSERT INTO publisher VALUES(publisher_id,p_name);
 		END IF;
+	INSERT INTO publishes VALUES(publisher_id,game_id);
 END $$
 
 delimiter ;
@@ -294,6 +296,7 @@ BEGIN
 			THEN 
 			INSERT INTO award VALUES(award_id,a_name);
 		END IF;
+	INSERT INTO game_award VALUES(award_id,game_id);
 END $$
 
 delimiter ;
@@ -316,6 +319,90 @@ BEGIN
 END $$
 
 delimiter ;
+
+DROP PROCEDURE IF EXISTS get_potential_friends;
+DELIMITER $$
+CREATE PROCEDURE get_potential_friends(friend_username VARCHAR(64))
+BEGIN
+	SELECT username from app_user
+    WHERE username != friend_username
+    and username not in 
+		(select username_two from friends 
+        where username_one = friend_username);
+END $$
+delimiter ;
+
+DROP PROCEDURE IF EXISTS friend_user;
+DELIMITER $$
+CREATE PROCEDURE friend_user(my_username VARCHAR(64), friend_username VARCHAR(64))
+BEGIN
+	INSERT INTO friends VALUES(my_username, friend_username);
+END $$
+delimiter ;
+
+
+DROP PROCEDURE IF EXISTS rate_game;
+DELIMITER $$
+CREATE PROCEDURE rate_game(my_username VARCHAR(64), game_id int, rating int, user_comment varchar(1024))
+BEGIN
+	
+	DECLARE clamped_value INT;
+    DECLARE clamped_string VARCHAR(1024);
+    SET clamped_value = least(greatest(rating, 1), 10);
+    SET clamped_string = LEFT(user_comment, 1024);
+	INSERT INTO rates VALUES(my_username, game_id, clamped_value, clamped_string);
+END $$
+delimiter ;
+
+DROP PROCEDURE IF EXISTS create_collection;
+DELIMITER $$
+CREATE PROCEDURE create_collection(my_username VARCHAR(64),collection_name VARCHAR(64),collection_location VARCHAR(64))
+BEGIN 
+	declare item_exists INT;
+    DECLARE max_val INT;
+    DECLARE message VARCHAR(64);
+    SELECT max(collection_id) INTO max_val FROM collection;
+    if (max_val is null)
+		then set max_val = 1;
+	END IF;
+    SELECT count(collection_id) INTO item_exists FROM collection join owns USING(collection_id) WHERE (owns.username = username) and (collection_name = collection_name);
+    if (item_exists >= 1)
+		then
+		set message = CONCAT("board game collection ",collection_name," already exists");
+		SIGNAL SQLSTATE '45000'
+		set message_text = message;
+	end if;
+    INSERT INTO collection VALUES(max_val,collection_name,collection_location);
+    INSERT INTO owns VALUES(my_username,max_val);
+    
+END $$
+delimiter ;
+
+DROP PROCEDURE IF EXISTS add_game_to_collection;
+DELIMITER $$
+
+CREATE PROCEDURE add_game_to_collection(game_id INT,username VARCHAR(64),collection_name VARCHAR(64))
+BEGIN 
+    DECLARE id INT;
+	DECLARE message VARCHAR(64);
+    DECLARE item_exists INT;
+	SELECT COUNT(game_id) INTO item_exists FROM board_game WHERE (board_game.game_id = game_id);
+	IF (item_exists < 1)
+		THEN
+			set message = CONCAT("board_game ",game_id," does not exist");
+			SIGNAL SQLSTATE '45000'
+			set message_text = message;
+	END IF;
+    SELECT collection_id INTO id FROM owns join collection USING(collection_id) WHERE (owns.username = username) and (collection.name = collection_name);
+    
+    INSERT INTO collection_contains VALUES(id,game_id);
+    
+END $$
+delimiter ;
+
+
+call rate_game('tim2', 1, 300, 'racial!!');
+select * from rates;
 
 CALL add_game(1024,"test_game","2022",1,10,13,"a game");
 
