@@ -81,8 +81,6 @@ class Python_Ui:
                 while True:
                     username = input("What is your username?")
                     password = input("What is your password?")
-                    username = "tim"
-                    password = "test"
                     if len(username) > 64 or len(username) == 0:
                         print("Invalid length of username")
                         continue

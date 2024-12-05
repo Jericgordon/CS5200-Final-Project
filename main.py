@@ -18,9 +18,8 @@ def login():
 
 
 def main():
-    #cnx = login()
-    cnx = pymysql.connect(host='localhost',user = "foo",password="poplop",\
-                            db ='final_project',charset='utf8mb4')
+    cnx = login()
+
     u = Python_Ui(cnx)
 
 
