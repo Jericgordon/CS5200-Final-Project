@@ -149,8 +149,9 @@ class Python_Ui:
             choice = self.get_user_choice(options)
             if choice == 3: #leaves the revew as is
                 return
-            self.user.delete_review(game) # Deletes the game
+             # Deletes the game
             if choice == 2: 
+                self.user.delete_review(game)
                 return
             else:
                 rating, desc = self._get_rating_and_description()
