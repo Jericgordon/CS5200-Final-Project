@@ -211,7 +211,7 @@ class Python_Ui:
                 libraries.append("query all libraries")
                 choice = self.get_user_choice(libraries)
                 if choice < len(libraries):
-                    library_id = libarary_results[libraries[choice]] #Accessing library ID
+                    library_id = libarary_results[libraries[choice-1]] #Accessing library ID
                     response = self.user.get_recommendations_from(library_id)
                 else:
                     response = self.user.get_recommended_games_from_all()
