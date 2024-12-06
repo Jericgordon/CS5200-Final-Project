@@ -156,7 +156,7 @@ class User():
 
     def edit_review(self, game_id:int, new_rating:int, new_description:str)->None:
         cur = self.cnx.cursor()
-        cur.execute('update_rating', (self.username, game_id, new_rating, new_description))
+        cur.callproc('update_rating', [self.username, game_id, new_rating, new_description])
         self.cnx.commit()
         cur.close()
     

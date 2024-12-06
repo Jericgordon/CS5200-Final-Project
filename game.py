@@ -111,7 +111,7 @@ class Game(): #
     
     def get_list_of_games_in_db(self,title) -> dict:
         cur = self.cnx.cursor()
-        cur.callproc('query_game', (title,))
+        cur.callproc('query_game', [title])
         games = cur.fetchall()
         cur.close()
         return {game[1]:game[0] for game in games}

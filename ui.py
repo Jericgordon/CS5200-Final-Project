@@ -81,8 +81,6 @@ class Python_Ui:
                 while True:
                     username = input("What is your username?")
                     password = input("What is your password?")
-                    username = "tim"
-                    password = "test"
                     if len(username) > 64 or len(username) == 0:
                         print("Invalid length of username")
                         continue
@@ -151,8 +149,9 @@ class Python_Ui:
             choice = self.get_user_choice(options)
             if choice == 3: #leaves the revew as is
                 return
-            self.user.delete_review(game) # Deletes the game
+             # Deletes the game
             if choice == 2: 
+                self.user.delete_review(game)
                 return
             else:
                 rating, desc = self._get_rating_and_description()
@@ -212,7 +211,7 @@ class Python_Ui:
                 libraries.append("query all libraries")
                 choice = self.get_user_choice(libraries)
                 if choice < len(libraries):
-                    library_id = libarary_results[libraries[choice]] #Accessing library ID
+                    library_id = libarary_results[libraries[choice-1]] #Accessing library ID
                     response = self.user.get_recommendations_from(library_id)
                 else:
                     response = self.user.get_recommended_games_from_all()
